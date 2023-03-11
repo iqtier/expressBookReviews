@@ -4,6 +4,34 @@ let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
+const getAllBooks = async () => {
+	try {
+		const allBooksPromise = await Promise.resolve(books)
+		if (allBooksPromise) {
+			return allBooksPromise
+		} else {
+			return Promise.reject(new Error('No books found.'))
+		}
+	} catch (err) {
+		console.log(err)
+	}
+}
+
+const getBooksDetailsByISBN = async (isbn) => {
+	try {
+		const ISBNPromise = await Promise.resolve(isbn)
+		if (ISBNPromise) {
+			return Promise.resolve(isbn)
+		} else {
+			return Promise.reject(new Error('Could not retrieve ISBN Promise.'))
+		}
+	} catch (error) {
+		console.log(error)
+	}
+}
+
+
+
 public_users.post("/register", (req, res) => {
   //Write your code here
   let userName = req.body.userName;
@@ -26,55 +54,91 @@ public_users.post("/register", (req, res) => {
 });
 
 // Get the book list available in the shop
-public_users.get("/", function (req, res) {
-  res.send(JSON.stringify(books));
+public_users.get("/", async function (req, res) {
+
+  res.send(await getAllBooks());
 });
 
 // Get book details based on ISBN
-public_users.get("/isbn/:isbn", function (req, res) {
+public_users.get("/isbn/:isbn",async function (req, res) {
   //Write your code here
   let isbn = req.params.isbn;
-  console.log(isbn);
-  let book = books[isbn];
-  if (book) {
-    res.send(JSON.stringify(book));
-  } else {
-    res.send(`Can not find isbn ${isbn}`);
-  }
+  const data = await getBooksDetailsByISBN(isbn)
+	res.send(books[data])
 });
 
+
+
+const findByAuthor = async author => {
+	try {
+		if (author) {
+			let booksquery = {};
+			for (const [key, value] of Object.entries(books)) {
+        console.log(key);
+        if (books[key].author === author) {
+          booksquery[key] = value;
+        }
+      }if (Object.keys(booksquery).length){
+        return Promise.resolve(booksquery )
+      }
+		} else {
+			return Promise.reject(
+				 new Error('Could not retrieve Author Promise.')
+			)
+		}
+	} catch (error) {
+		console.log(error)
+	}
+}
 // Get book details based on author
-public_users.get("/author/:author", function (req, res) {
+public_users.get("/author/:author", async function (req, res) {
   //Write your code here
-  let booksquery = {};
+
   let author = req.params.author;
-  for (const [key, value] of Object.entries(books)) {
-    console.log(key);
-    if (books[key].author === author) {
-      booksquery[key] = value;
-    }
+  const data = await findByAuthor(author)
+  if (data){
+    res.send(data)
+  }else{
+    res.send(`No author found for ${author}`)
   }
-  if (Object.keys(booksquery).length) {
-    res.send(booksquery);
-  } else {
-    res.send(`Cant find any books written by ${author}`);
-  }
+
+	
 });
+
+
+const findByTitle = async title => {
+	try {
+		if (title) {
+			let booksquery = {};
+			for (const [key, value] of Object.entries(books)) {
+        console.log(key);
+        if (books[key].title === title) {
+          booksquery[key] = value;
+        }
+      }if (Object.keys(booksquery).length){
+        return Promise.resolve(booksquery )
+      }
+		} else {
+			return Promise.reject(
+				 new Error('Could not retrieve title Promise.')
+			)
+		}
+	} catch (error) {
+		console.log(error)
+	}
+}
 
 // Get all books based on title
-public_users.get("/title/:title", function (req, res) {
+public_users.get("/title/:title", async function (req, res) {
   //Write your code here
-  let booksquery = {};
+
   let title = req.params.title;
-  for (const [key, value] of Object.entries(books)) {
-    if (books[key].title === title) {
-      booksquery[key] = value;
-    }
-  }
-  if (Object.keys(booksquery).length) {
-    res.send(booksquery);
-  } else {
-    res.send(`Cant find any books name "${title}"`);
+
+  const data = await findByTitle(title)
+  if (data){
+    res.send(data)
+  }else{
+    res.send(`No title found for ${title}`)
   }
 });
 
