@@ -17,7 +17,7 @@ const getAllBooks = async () => {
 	}
 }
 
-const getBooksDetailsByISBN = async (isbn) => {
+const findByISBN = async (isbn) => {
 	try {
 		const ISBNPromise = await Promise.resolve(isbn)
 		if (ISBNPromise) {
@@ -63,7 +63,7 @@ public_users.get("/", async function (req, res) {
 public_users.get("/isbn/:isbn",async function (req, res) {
   //Write your code here
   let isbn = req.params.isbn;
-  const data = await getBooksDetailsByISBN(isbn)
+  const data = await findByISBN(isbn)
 	res.send(books[data])
 });
 
